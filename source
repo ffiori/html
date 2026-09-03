@@ -66996,6 +66996,9 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
   and a <code>Document</code> <var>focusSetterDocument</var>, are as follows:</p>
 
   <ol>
+   <li><p>If <var>subject</var>'s <span>node document</span> is not <span>fully active</span>, then
+   return.</p></li>
+
    <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
    then return.</p></li>
 
