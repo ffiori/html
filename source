@@ -66978,7 +66978,8 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
 
   <ol>
    <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
-   document</span> return false, then return.</p></li>
+   document</span> and <var>subject</var>'s <span>node document</span> return false, then
+   return.</p></li>
 
    <li><p>Let <var>control</var> be null.</p></li>
 
@@ -86748,7 +86749,9 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <p>The <dfn export>focusing steps</dfn> for an object <var>new focus target</var> that is either a
   <span>focusable area</span>, or an element that is not a <span>focusable area</span>, or a
   <span>navigable</span>, are as follows. They can optionally be run with a <var>fallback
-  target</var> and a string <var>focus trigger</var>.</p>
+  target</var>, a string <var>focus trigger</var>, and a <code>Document</code>-or-null
+  <var>source</var> (default null). They return a boolean, which is false only when the focus change
+  was not allowed.</p>
 
   <ol>
    <!-- https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=2816 div.focus() when it's got a scroll region -->
@@ -86763,7 +86766,7 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
     <p>If <var>new focus target</var> is null:</p>
 
     <ol>
-     <li><p>If no <var>fallback target</var> was specified, then return.</p></li>
+     <li><p>If no <var>fallback target</var> was specified, then return true.</p></li>
 
      <li><p>Otherwise, set <var>new focus target</var> to the <var>fallback
      target</var>.</p></li>
@@ -86775,11 +86778,25 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    navigable</span>'s <span data-x="nav-document">active document</span>.</p></li>
    <!-- https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=2818 -->
 
+   <li>
+    <p>If <var>source</var> is not null:</p>
+
+    <ol>
+     <li><p>If <var>new focus target</var> is a <code>Document</code>, then let
+     <var>targetDocument</var> be <var>new focus target</var>. Otherwise, let
+     <var>targetDocument</var> be <var>new focus target</var>'s <span>DOM anchor</span>'s
+     <span>node document</span>.</p></li>
+
+     <li><p>If the <span>allow focus steps</span> given <var>targetDocument</var> and
+     <var>source</var> return false, then return false.</p></li>
+    </ol>
+   </li>
+
    <li><p>If <var>new focus target</var> is a <span>focusable area</span> and its <span>DOM
-   anchor</span> is <span>inert</span>, then return.</p></li>
+   anchor</span> is <span>inert</span>, then return true.</p></li>
 
    <li><p>If <var>new focus target</var> is the <span>currently focused area of a top-level
-   traversable</span>, then return.</p></li>
+   traversable</span>, then return true.</p></li>
 
    <li><p>Let <var>old chain</var> be the <span data-x="current focus chain of a top-level
    traversable">current focus chain of the top-level traversable</span> in which <var>new focus
@@ -86790,8 +86807,22 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>Run the <span>focus update steps</span> with <var>old chain</var>, <var>new chain</var>,
    and <var>new focus target</var> respectively.</p></li>
+
+   <li><p>Return true.</p></li>
   </ol>
   </div>
+
+  <p class="note">A <var>source</var> identifies the <code>Document</code> that asked for the focus
+  to move. It is only passed by call sites that are moving the focus on behalf of a
+  <code>Document</code>; when it is null, as it is for focus changes the user or the user agent
+  initiates, no permission check is performed.</p>
+
+  <p class="note">The check deliberately sits after the step that redirects a <span>navigable
+  container</span> to its <span>content navigable</span>, so it always runs against the
+  <code>Document</code> the focus would actually land in. That is what makes <code
+  data-x="dom-focus">focus()</code> on an <code>iframe</code> element and <code
+  data-x="dom-window-focus">focus()</code> on that <code>iframe</code>'s <code>Window</code> behave
+  the same way.</p>
 
   <div algorithm>
   <p>User agents must <span>immediately</span> run the <span>focusing steps</span> for a
@@ -87402,10 +87433,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>If <var>current</var> is null, then return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>current</var>'s <span
-   data-x="nav-document">active document</span> return false, then return.</p></li>
-
-   <li><p>Run the <span>focusing steps</span> with <var>current</var>.</p></li>
+   <li><p>If running the <span>focusing steps</span> with <var>current</var>, with the <span>focus
+   source</span> as the <i>source</i>, returns false, then return.</p></li>
 
    <li><p>If <var>current</var> is a <span>top-level traversable</span>, user agents are encouraged
    to trigger some sort of notification to indicate to the user that the page is attempting to gain
@@ -87430,10 +87459,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   data-x="dom-focus">focus(<var>options</var>)</code></dfn> method steps are:</p>
 
   <ol>
-   <li><p>If the <span>allow focus steps</span> given <span>this</span>'s <span>node document</span>
-   return false, then return.</p></li>
-
-   <li><p>Run the <span>focusing steps</span> for <span>this</span>.</p></li>
+   <li><p>If running the <span>focusing steps</span> for <span>this</span>, with the <span>focus
+   source</span> as the <i>source</i>, returns false, then return.</p></li>
 
    <li><p>If <var>options</var>["<dfn dict-member for="FocusOptions"><code
    data-x="dom-focusoptions-focusvisible">focusVisible</code></dfn>"] is true, or does not <span
@@ -87468,8 +87495,32 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <hr>
 
   <div algorithm>
-  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object
-  <var>target</var>, are:</p>
+  <p>The <dfn>focus source</dfn> is the <code>Document</code> object or null returned by these
+  steps:</p>
+
+  <ol>
+   <li><p>Let <var>global</var> be the <span data-x="concept-incumbent-global">incumbent global
+   object</span>.</p></li>
+
+   <li><p>If <var>global</var> is not a <code>Window</code> object, then return null.</p></li>
+
+   <li><p>Return <var>global</var>'s <span data-x="concept-document-window">associated
+   <code>Document</code></span>.</p></li>
+  </ol>
+  </div>
+
+  <p class="note">The <span>focus source</span> is the <code>Document</code> whose script asked for
+  the focus to move, which is not necessarily the <code>Document</code> the focus would move into.
+  It is derived from the <span data-x="concept-incumbent-global">incumbent global object</span> for
+  the same reason that <code data-x="dom-location-assign">assign()</code> derives its
+  <var>sourceDocument</var> that way: it identifies the document responsible for the request, and it
+  does so identically for same-origin and cross-origin calls. It is looked up once, at the API
+  boundary, and then passed explicitly through the <span>focusing steps</span>; nothing below that
+  point consults an ambient global.</p>
+
+  <div algorithm>
+  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object <var>target</var>
+  and a <code>Document</code>-or-null <var>source</var>, are:</p>
 
   <ol>
    <li><p>If <var>target</var> is <span>allowed to use</span> the "<code
@@ -87479,24 +87530,100 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>target</var>'s <span>relevant global object</span> has <span>transient
    activation</span>, then return true.</p></li>
 
-   <li><p>Let <var>focusSetterDocument</var> be the <span>current global object</span>'s
-   <span data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
+   <li><p>If <var>target</var>'s <span>node navigable</span> is null, then return false.</p></li>
+
+   <li><p>Let <var>focusedArea</var> be the <span data-x="currently focused area of a top-level
+   traversable">currently focused area</span> of <var>target</var>'s <span>node navigable</span>'s
+   <span data-x="nav-top">top-level traversable</span>.</p></li>
 
    <li>
-    <p>For each <var>navigable</var> in the <span>inclusive descendant navigables</span> of
-    <var>focusSetterDocument</var>:</p>
+    <p>If <var>focusedArea</var> is non-null, then for each <var>navigable</var> of
+    <var>focusedArea</var>'s <span>DOM anchor</span>'s <span>node document</span>'s
+    <span>inclusive ancestor navigables</span>:</p>
 
     <ol>
-     <li><p>Let <var>descendantDocument</var> be <var>navigable</var>'s
-     <span data-x="nav-document">active document</span>.</p></li>
+     <li><p>Let <var>fullscreenDocument</var> be <var>navigable</var>'s <span
+     data-x="nav-document">active document</span>.</p></li>
 
-     <li><p>If running the <span>has focus steps</span> given <var>descendantDocument</var> returns
-     true, then return true.</p></li>
+     <li><p>If <var>fullscreenDocument</var>'s <span>fullscreen element</span> is non-null and
+     <var>fullscreenDocument</var>'s <span>inclusive descendant navigables</span> does not <span
+     data-x="list contains">contain</span> <var>target</var>'s <span>node navigable</span>, then
+     return false.</p></li>
     </ol>
    </li>
 
+   <li><p>If running the <span>has focus steps</span> given <var>target</var> returns true, then
+   return true.</p></li>
+
+   <li><p>If <var>source</var> is non-null, <var>source</var>'s <span>node navigable</span> is
+   non-null, <var>source</var>'s <span>inclusive descendant navigables</span> <span
+   data-x="list contains">contains</span> <var>target</var>'s <span>node navigable</span>, and
+   either <var>source</var> is <span>allowed to use</span> the "<code
+   data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature or
+   running the <span>has focus steps</span> given <var>source</var> returns true, then return
+   true.</p></li>
+
    <li><p>Return false.</p></li>
   </ol>
+  </div>
+
+  <p class="note">There are two ways to move the focus without <span>transient activation</span>.
+  The first is that the focus is already inside <var>target</var>: the <span>has focus steps</span>
+  return true when the focus is in <var>target</var> itself or in any of the <span
+  data-x="nav-document">active documents</span> of <var>target</var>'s <span>inclusive descendant
+  navigables</span>, so a document that already holds the focus can move it around within itself and
+  take it back from its own descendants. The second is delegation: a <var>source</var> that is
+  either <span>allowed to use</span> the feature or already holds the focus can hand it to a
+  <code>Document</code> inside its own subtree, which is what was resolved on at TPAC 2024. What the
+  "<code data-x="focus-without-user-activation-feature">focus-without-user-activation</code>"
+  feature prevents is a document pulling the focus in from outside both.</p>
+
+  <p class="note">The delegation step is scoped to <var>source</var>'s own subtree. Without that,
+  a document that merely happens to hold the focus could move it into an unrelated
+  <code>Document</code> &mdash; a sibling <span>navigable</span>, or a <span>navigable</span> in the
+  <span data-x="nav-top">top-level traversable</span> that opened it &mdash; which would let a
+  document that is not <span>allowed to use</span> the feature be focused anyway. Within its own
+  subtree it is safe, because an embedder is the party that set its children's permissions policy in
+  the first place.</p>
+
+  <p class="note">A document whose <span>node navigable</span> has a null <span
+  data-x="nav-parent">parent</span> is always <span>allowed to use</span> a feature whose <span
+  data-x="concept-default-allowlist">default allowlist</span> is <code data-x="">'self'</code>, so
+  for those documents the first step already returns true. These steps therefore only change
+  behavior for documents in <span data-x="child navigable">child navigables</span>; focusing across
+  <span data-x="nav-top">top-level traversables</span>, such as between a page and a popup it
+  opened, is unaffected.</p>
+
+  <p class="note">The <span>fullscreen element</span> steps stop the focus from being pulled out of
+  a document that is displaying fullscreen content. They walk the <span>inclusive ancestor
+  navigables</span> of the document the focus is in, because the document whose <span>fullscreen
+  element</span> is non-null is not necessarily the document the focus is in: a document can put a
+  <span>navigable container</span> into fullscreen, in which case the focus ends up inside the
+  <span>content navigable</span> while the <span>fullscreen element</span> belongs to the
+  container's <code>Document</code>.</p>
+
+  <p class="note">Those steps are a mitigation rather than a guarantee. They sit after the first two
+  steps, so a document that is <span>allowed to use</span> the feature, or that has <span>transient
+  activation</span> because the user just interacted with the fullscreen content, can still move the
+  focus.</p>
+
+  <div class="example">
+   <p>Consider a top-level document A which embeds B with <code data-x="">&lt;iframe
+   allow="focus-without-user-activation 'none'"&gt;</code>, and where B embeds C the same way.</p>
+
+   <p>While A holds the focus, script in B calling <code data-x="dom-focus">focus()</code> on one of
+   its own elements does nothing: neither B nor B's <var>source</var>, which is also B, holds the
+   focus. This is what stops an embedded advertisement from interrupting the user as they type in
+   A.</p>
+
+   <p>If A hands the focus to B &mdash; with <code data-x="dom-focus">focus()</code> on the
+   <code>iframe</code> element, or equivalently with <code
+   data-x="dom-window-focus">focus()</code> on B's <code>Window</code> &mdash; that succeeds,
+   because A is the <var>source</var>, A holds the focus, and B is inside A. Once the focus is
+   inside B, script in B may move it to any of its own elements, or on into C, and may take it back
+   from C afterwards.</p>
+
+   <p>When the focus later returns to A, B is back to not being able to pull it in.</p>
   </div>
 
   </div>
@@ -87579,8 +87706,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>target</var>'s <span>active sandboxing flag set</span> has the
    <span>sandboxed automatic features browsing context flag</span>, then return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>target</var> return false, then
-   return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <var>target</var> and <var>target</var> return
+   false, then return.</p></li>
 
    <li><p>Let <var>topDocument</var> be <var>target</var>'s <span>node navigable</span>'s <span
    data-x="nav-top">top-level traversable</span>'s <span data-x="nav-document">active
@@ -93022,7 +93149,8 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
 
   <ol>
    <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
-   document</span> return false, then return.</p></li>
+   document</span> and <var>subject</var>'s <span>node document</span> return false, then
+   return.</p></li>
 
    <li><p>If <var>subject</var> is a <code>dialog</code> element, then run the <span>dialog focusing
    steps</span> given <var>subject</var> and return.</p></li>
