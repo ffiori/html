@@ -87512,8 +87512,6 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>focusSetterDocument</var> is not <span>fully active</span>, then return
    false.</p></li>
 
-   <li><p>Let <var>focusSetterOrDescendantHasFocus</var> be false.</p></li>
-
    <li>
     <p>For each <var>navigable</var> in the <span>inclusive descendant navigables</span> of
     <var>focusSetterDocument</var>:</p>
@@ -87522,21 +87520,12 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
      <li><p>Let <var>descendantDocument</var> be <var>navigable</var>'s <span
      data-x="nav-document">active document</span>.</p></li>
 
-     <li>
-      <p>If running the <span>has focus steps</span> given <var>descendantDocument</var> returns
-      true:</p>
-
-      <ol>
-       <li><p>If <var>descendantDocument</var>'s <span>fullscreen element</span> is not null, then
-       return false.</p></li>
-
-       <li><p>Set <var>focusSetterOrDescendantHasFocus</var> to true.</p></li>
-      </ol>
-     </li>
+     <li><p>If running the <span>has focus steps</span> given <var>descendantDocument</var> returns
+     true, then return true.</p></li>
     </ol>
    </li>
 
-   <li><p>Return <var>focusSetterOrDescendantHasFocus</var>.</p></li>
+   <li><p>Return false.</p></li>
   </ol>
   </div>
 
