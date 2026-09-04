@@ -66978,7 +66978,8 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
 
   <ol>
    <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
-   document</span> return false, then return.</p></li>
+   document</span> and <var>subject</var>'s <span>node document</span> return false, then
+   return.</p></li>
 
    <li><p>Let <var>control</var> be null.</p></li>
 
@@ -86748,7 +86749,9 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <p>The <dfn export>focusing steps</dfn> for an object <var>new focus target</var> that is either a
   <span>focusable area</span>, or an element that is not a <span>focusable area</span>, or a
   <span>navigable</span>, are as follows. They can optionally be run with a <var>fallback
-  target</var> and a string <var>focus trigger</var>.</p>
+  target</var>, a string <var>focus trigger</var>, and a <code>Document</code>-or-null
+  <var>source</var> (default null). They return false if the focus change was refused by the
+  <span>allow focus steps</span>, and true otherwise; true does not imply that the focus moved.</p>
 
   <ol>
    <!-- https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=2816 div.focus() when it's got a scroll region -->
@@ -86763,7 +86766,7 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
     <p>If <var>new focus target</var> is null:</p>
 
     <ol>
-     <li><p>If no <var>fallback target</var> was specified, then return.</p></li>
+     <li><p>If no <var>fallback target</var> was specified, then return true.</p></li>
 
      <li><p>Otherwise, set <var>new focus target</var> to the <var>fallback
      target</var>.</p></li>
@@ -86775,11 +86778,25 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    navigable</span>'s <span data-x="nav-document">active document</span>.</p></li>
    <!-- https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=2818 -->
 
+   <li>
+    <p>If <var>source</var> is not null:</p>
+
+    <ol>
+     <li><p>If <var>new focus target</var> is a <code>Document</code>, then let
+     <var>targetDocument</var> be <var>new focus target</var>. Otherwise, let
+     <var>targetDocument</var> be <var>new focus target</var>'s <span>DOM anchor</span>'s
+     <span>node document</span>.</p></li>
+
+     <li><p>If the <span>allow focus steps</span> given <var>targetDocument</var> and
+     <var>source</var> return false, then return false.</p></li>
+    </ol>
+   </li>
+
    <li><p>If <var>new focus target</var> is a <span>focusable area</span> and its <span>DOM
-   anchor</span> is <span>inert</span>, then return.</p></li>
+   anchor</span> is <span>inert</span>, then return true.</p></li>
 
    <li><p>If <var>new focus target</var> is the <span>currently focused area of a top-level
-   traversable</span>, then return.</p></li>
+   traversable</span>, then return true.</p></li>
 
    <li><p>Let <var>old chain</var> be the <span data-x="current focus chain of a top-level
    traversable">current focus chain of the top-level traversable</span> in which <var>new focus
@@ -86790,6 +86807,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>Run the <span>focus update steps</span> with <var>old chain</var>, <var>new chain</var>,
    and <var>new focus target</var> respectively.</p></li>
+
+   <li><p>Return true.</p></li>
   </ol>
   </div>
 
@@ -87402,10 +87421,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>If <var>current</var> is null, then return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>current</var>'s <span
-   data-x="nav-document">active document</span> return false, then return.</p></li>
-
-   <li><p>Run the <span>focusing steps</span> with <var>current</var>.</p></li>
+   <li><p>If running the <span>focusing steps</span> with <var>current</var>, with the <span>focus
+   source</span> as the <i>source</i>, returns false, then return.</p></li>
 
    <li><p>If <var>current</var> is a <span>top-level traversable</span>, user agents are encouraged
    to trigger some sort of notification to indicate to the user that the page is attempting to gain
@@ -87430,10 +87447,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   data-x="dom-focus">focus(<var>options</var>)</code></dfn> method steps are:</p>
 
   <ol>
-   <li><p>If the <span>allow focus steps</span> given <span>this</span>'s <span>node document</span>
-   return false, then return.</p></li>
-
-   <li><p>Run the <span>focusing steps</span> for <span>this</span>.</p></li>
+   <li><p>If running the <span>focusing steps</span> for <span>this</span>, with <span>this</span>'s
+   <span>node document</span> as the <i>source</i>, returns false, then return.</p></li>
 
    <li><p>If <var>options</var>["<dfn dict-member for="FocusOptions"><code
    data-x="dom-focusoptions-focusvisible">focusVisible</code></dfn>"] is true, or does not <span
@@ -87468,8 +87483,23 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <hr>
 
   <div algorithm>
-  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object
-  <var>target</var>, are:</p>
+  <p>The <dfn>focus source</dfn> is the <code>Document</code> object or null returned by these
+  steps:</p>
+
+  <ol>
+   <li><p>Let <var>global</var> be the <span data-x="concept-incumbent-global">incumbent global
+   object</span>.</p></li>
+
+   <li><p>If <var>global</var> is not a <code>Window</code> object, then return null.</p></li>
+
+   <li><p>Return <var>global</var>'s <span data-x="concept-document-window">associated
+   <code>Document</code></span>.</p></li>
+  </ol>
+  </div>
+
+  <div algorithm>
+  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object <var>target</var>
+  and a <code>Document</code>-or-null <var>source</var>, are:</p>
 
   <ol>
    <li><p>If <var>target</var> is <span>allowed to use</span> the "<code
@@ -87478,6 +87508,28 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>If <var>target</var>'s <span>relevant global object</span> has <span>transient
    activation</span>, then return true.</p></li>
+
+   <li><p>If <var>target</var>'s <span>node navigable</span> is null, then return false.</p></li>
+
+   <li><p>If running the <span>has focus steps</span> given <var>target</var> returns true, then
+   return true.</p></li>
+
+   <li><p>If <var>source</var> is null or <var>source</var>'s <span>node navigable</span> is null,
+   then return false.</p></li>
+
+   <li><p>If <var>source</var>'s <span>inclusive descendant navigables</span> does not <span
+   data-x="list contains">contain</span> <var>target</var>'s <span>node navigable</span>, then
+   return false.</p></li>
+
+   <li><p>If <var>source</var> is <span>allowed to use</span> the "<code
+   data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature,
+   then return true.</p></li>
+
+   <li><p>If <var>source</var>'s <span>relevant global object</span> has <span>transient
+   activation</span>, then return true.</p></li>
+
+   <li><p>If running the <span>has focus steps</span> given <var>source</var> returns true, then
+   return true.</p></li>
 
    <li><p>Return false.</p></li>
   </ol>
@@ -87563,8 +87615,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>target</var>'s <span>active sandboxing flag set</span> has the
    <span>sandboxed automatic features browsing context flag</span>, then return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>target</var> return false, then
-   return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <var>target</var> and <var>target</var> return
+   false, then return.</p></li>
 
    <li><p>Let <var>topDocument</var> be <var>target</var>'s <span>node navigable</span>'s <span
    data-x="nav-top">top-level traversable</span>'s <span data-x="nav-document">active
@@ -93006,7 +93058,8 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
 
   <ol>
    <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
-   document</span> return false, then return.</p></li>
+   document</span> and <var>subject</var>'s <span>node document</span> return false, then
+   return.</p></li>
 
    <li><p>If <var>subject</var> is a <code>dialog</code> element, then run the <span>dialog focusing
    steps</span> given <var>subject</var> and return.</p></li>
@@ -162133,6 +162186,7 @@ INSERT INTERFACES HERE
   Félix Sanz,
   Felix Sasaki,
   Fernando Altomare Serboncini,
+  Fernando Fiori,
   Forbes Lindesay,
   Francesco Schwarz,
   Francis Brosnan Blazquez,
