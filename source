@@ -86750,8 +86750,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <span>focusable area</span>, or an element that is not a <span>focusable area</span>, or a
   <span>navigable</span>, are as follows. They can optionally be run with a <var>fallback
   target</var>, a string <var>focus trigger</var>, and a <code>Document</code>-or-null
-  <var>source</var> (default null). They return a boolean, which is false only when the focus change
-  was not allowed.</p>
+  <var>source</var> (default null). They return false if the focus change was refused by the
+  <span>allow focus steps</span>, and true otherwise; true does not imply that the focus moved.</p>
 
   <ol>
    <!-- https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=2816 div.focus() when it's got a scroll region -->
@@ -86823,6 +86823,13 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   data-x="dom-focus">focus()</code> on an <code>iframe</code> element and <code
   data-x="dom-window-focus">focus()</code> on that <code>iframe</code>'s <code>Window</code> behave
   the same way.</p>
+
+  <p class="note">These steps do not gate focus changes on a document that is displaying a
+  <span>fullscreen element</span> any differently from any other focus change. Moving the focus out
+  of fullscreen content is possible whenever the mover has <span>transient activation</span>, and
+  interacting with fullscreen content gives every ancestor <code>Window</code> <span>transient
+  activation</span>, so a restriction here would not be effective; see <a
+  href="https://github.com/whatwg/fullscreen/issues/15">fullscreen issue #15</a>.</p>
 
   <div algorithm>
   <p>User agents must <span>immediately</span> run the <span>focusing steps</span> for a
@@ -87459,8 +87466,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   data-x="dom-focus">focus(<var>options</var>)</code></dfn> method steps are:</p>
 
   <ol>
-   <li><p>If running the <span>focusing steps</span> for <span>this</span>, with the <span>focus
-   source</span> as the <i>source</i>, returns false, then return.</p></li>
+   <li><p>If running the <span>focusing steps</span> for <span>this</span>, with <span>this</span>'s
+   <span>node document</span> as the <i>source</i>, returns false, then return.</p></li>
 
    <li><p>If <var>options</var>["<dfn dict-member for="FocusOptions"><code
    data-x="dom-focusoptions-focusvisible">focusVisible</code></dfn>"] is true, or does not <span
@@ -87509,14 +87516,21 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   </ol>
   </div>
 
-  <p class="note">The <span>focus source</span> is the <code>Document</code> whose script asked for
-  the focus to move, which is not necessarily the <code>Document</code> the focus would move into.
-  It is derived from the <span data-x="concept-incumbent-global">incumbent global object</span> for
-  the same reason that <code data-x="dom-location-assign">assign()</code> derives its
-  <var>sourceDocument</var> that way: it identifies the document responsible for the request, and it
-  does so identically for same-origin and cross-origin calls. It is looked up once, at the API
-  boundary, and then passed explicitly through the <span>focusing steps</span>; nothing below that
-  point consults an ambient global.</p>
+  <p class="note">The <span>focus source</span> is only used by <code
+  data-x="dom-window-focus">focus()</code> on a <code>Window</code>, and it is the only place in
+  these algorithms that consults an ambient global. It is needed there because
+  <code data-x="">someWindow.focus()</code> is the same call whether a parent makes it on a child or
+  a child makes it on itself, so the <code>Document</code> that is asking cannot be recovered from
+  the arguments. Everywhere else the responsible <code>Document</code> is named directly: <code
+  data-x="dom-focus">focus()</code> on an element uses that element's <span>node document</span>,
+  and the <code data-x="attr-fe-autofocus">autofocus</code>, <span>dialog focusing steps</span> and
+  <span>popover focusing steps</span> paths use their subject's <span>node document</span>.</p>
+
+  <p class="note">Deriving it from the <span data-x="concept-incumbent-global">incumbent global
+  object</span> matches how <code data-x="dom-location-assign">assign()</code> derives its
+  <var>sourceDocument</var>: it identifies the document responsible for the request, and it does so
+  identically for same-origin and cross-origin calls. It is read once, at the API boundary, and then
+  passed as data; nothing below that point consults an ambient global.</p>
 
   <div algorithm>
   <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object <var>target</var>
@@ -87532,36 +87546,25 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>If <var>target</var>'s <span>node navigable</span> is null, then return false.</p></li>
 
-   <li><p>Let <var>focusedArea</var> be the <span data-x="currently focused area of a top-level
-   traversable">currently focused area</span> of <var>target</var>'s <span>node navigable</span>'s
-   <span data-x="nav-top">top-level traversable</span>.</p></li>
-
-   <li>
-    <p>If <var>focusedArea</var> is non-null, then for each <var>navigable</var> of
-    <var>focusedArea</var>'s <span>DOM anchor</span>'s <span>node document</span>'s
-    <span>inclusive ancestor navigables</span>:</p>
-
-    <ol>
-     <li><p>Let <var>fullscreenDocument</var> be <var>navigable</var>'s <span
-     data-x="nav-document">active document</span>.</p></li>
-
-     <li><p>If <var>fullscreenDocument</var>'s <span>fullscreen element</span> is non-null and
-     <var>fullscreenDocument</var>'s <span>inclusive descendant navigables</span> does not <span
-     data-x="list contains">contain</span> <var>target</var>'s <span>node navigable</span>, then
-     return false.</p></li>
-    </ol>
-   </li>
-
    <li><p>If running the <span>has focus steps</span> given <var>target</var> returns true, then
    return true.</p></li>
 
-   <li><p>If <var>source</var> is non-null, <var>source</var>'s <span>node navigable</span> is
-   non-null, <var>source</var>'s <span>inclusive descendant navigables</span> <span
-   data-x="list contains">contains</span> <var>target</var>'s <span>node navigable</span>, and
-   either <var>source</var> is <span>allowed to use</span> the "<code
-   data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature or
-   running the <span>has focus steps</span> given <var>source</var> returns true, then return
-   true.</p></li>
+   <li><p>If <var>source</var> is null or <var>source</var>'s <span>node navigable</span> is null,
+   then return false.</p></li>
+
+   <li><p>If <var>source</var>'s <span>inclusive descendant navigables</span> does not <span
+   data-x="list contains">contain</span> <var>target</var>'s <span>node navigable</span>, then
+   return false.</p></li>
+
+   <li><p>If <var>source</var> is <span>allowed to use</span> the "<code
+   data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature,
+   then return true.</p></li>
+
+   <li><p>If <var>source</var>'s <span>relevant global object</span> has <span>transient
+   activation</span>, then return true.</p></li>
+
+   <li><p>If running the <span>has focus steps</span> given <var>source</var> returns true, then
+   return true.</p></li>
 
    <li><p>Return false.</p></li>
   </ol>
@@ -87572,18 +87575,18 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   return true when the focus is in <var>target</var> itself or in any of the <span
   data-x="nav-document">active documents</span> of <var>target</var>'s <span>inclusive descendant
   navigables</span>, so a document that already holds the focus can move it around within itself and
-  take it back from its own descendants. The second is delegation: a <var>source</var> that is
-  either <span>allowed to use</span> the feature or already holds the focus can hand it to a
-  <code>Document</code> inside its own subtree, which is what was resolved on at TPAC 2024. What the
+  take it back from its own descendants. The second is delegation: the last four steps say that a
+  <var>source</var> which could have moved the focus to itself may instead move it to any
+  <code>Document</code> inside its own subtree. That is what was resolved on at TPAC 2024. What the
   "<code data-x="focus-without-user-activation-feature">focus-without-user-activation</code>"
   feature prevents is a document pulling the focus in from outside both.</p>
 
-  <p class="note">The delegation step is scoped to <var>source</var>'s own subtree. Without that,
-  a document that merely happens to hold the focus could move it into an unrelated
-  <code>Document</code> &mdash; a sibling <span>navigable</span>, or a <span>navigable</span> in the
-  <span data-x="nav-top">top-level traversable</span> that opened it &mdash; which would let a
-  document that is not <span>allowed to use</span> the feature be focused anyway. Within its own
-  subtree it is safe, because an embedder is the party that set its children's permissions policy in
+  <p class="note">Delegation is scoped to <var>source</var>'s own subtree. Without that, a document
+  that merely happens to hold the focus could move it into an unrelated <code>Document</code>
+  &mdash; a sibling <span>navigable</span>, or a <span>navigable</span> in the <span
+  data-x="nav-top">top-level traversable</span> that opened it &mdash; which would let a document
+  that is not <span>allowed to use</span> the feature be focused anyway. Within its own subtree it
+  is safe, because an embedder is the party that determines its descendants' permissions policy in
   the first place.</p>
 
   <p class="note">A document whose <span>node navigable</span> has a null <span
@@ -87594,34 +87597,21 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <span data-x="nav-top">top-level traversables</span>, such as between a page and a popup it
   opened, is unaffected.</p>
 
-  <p class="note">The <span>fullscreen element</span> steps stop the focus from being pulled out of
-  a document that is displaying fullscreen content. They walk the <span>inclusive ancestor
-  navigables</span> of the document the focus is in, because the document whose <span>fullscreen
-  element</span> is non-null is not necessarily the document the focus is in: a document can put a
-  <span>navigable container</span> into fullscreen, in which case the focus ends up inside the
-  <span>content navigable</span> while the <span>fullscreen element</span> belongs to the
-  container's <code>Document</code>.</p>
-
-  <p class="note">Those steps are a mitigation rather than a guarantee. They sit after the first two
-  steps, so a document that is <span>allowed to use</span> the feature, or that has <span>transient
-  activation</span> because the user just interacted with the fullscreen content, can still move the
-  focus.</p>
-
   <div class="example">
    <p>Consider a top-level document A which embeds B with <code data-x="">&lt;iframe
    allow="focus-without-user-activation 'none'"&gt;</code>, and where B embeds C the same way.</p>
 
    <p>While A holds the focus, script in B calling <code data-x="dom-focus">focus()</code> on one of
-   its own elements does nothing: neither B nor B's <var>source</var>, which is also B, holds the
-   focus. This is what stops an embedded advertisement from interrupting the user as they type in
-   A.</p>
+   its own elements does nothing: the focus is not inside B, and B's <var>source</var> is B itself,
+   which is neither <span>allowed to use</span> the feature nor holding the focus. This is what
+   stops an embedded advertisement from interrupting the user as they type in A.</p>
 
    <p>If A hands the focus to B &mdash; with <code data-x="dom-focus">focus()</code> on the
    <code>iframe</code> element, or equivalently with <code
    data-x="dom-window-focus">focus()</code> on B's <code>Window</code> &mdash; that succeeds,
-   because A is the <var>source</var>, A holds the focus, and B is inside A. Once the focus is
-   inside B, script in B may move it to any of its own elements, or on into C, and may take it back
-   from C afterwards.</p>
+   because A is the <var>source</var>, A is <span>allowed to use</span> the feature, and B is inside
+   A. Once the focus is inside B, script in B may move it to any of its own elements, or on into C,
+   and may take it back from C afterwards.</p>
 
    <p>When the focus later returns to A, B is back to not being able to pull it in.</p>
   </div>
