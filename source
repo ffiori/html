@@ -66999,8 +66999,8 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
    <li><p>If <var>subject</var>'s <span>node document</span> is not <span>fully active</span>, then
    return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
-   then return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
+   document</span> and <var>focusSetterDocument</var> return false, then return.</p></li>
 
    <li><p>Let <var>control</var> be null.</p></li>
 
@@ -87428,7 +87428,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    data-x="concept-incumbent-global">incumbent global object</span>'s <span
    data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
+   <li><p>If the <span>allow focus steps</span> given <var>current</var>'s <span
+   data-x="nav-document">active document</span> and <var>focusSetterDocument</var> return false,
    then return.</p></li>
 
    <li><p>Run the <span>focusing steps</span> with <var>current</var>.</p></li>
@@ -87460,8 +87461,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    data-x="concept-incumbent-global">incumbent global object</span>'s <span
    data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
-   then return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <span>this</span>'s <span>node
+   document</span> and <var>focusSetterDocument</var> return false, then return.</p></li>
 
    <li><p>Run the <span>focusing steps</span> for <span>this</span>.</p></li>
 
@@ -87498,10 +87499,29 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   <hr>
 
   <div algorithm>
-  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object
-  <var>focusSetterDocument</var>, are:</p>
+  <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object <var>target</var>
+  and a <code>Document</code> object <var>focusSetterDocument</var>, are:</p>
 
   <ol>
+   <li><p>If <var>target</var> is <span>allowed to use</span> the "<code
+   data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature,
+   then return true.</p></li>
+
+   <li><p>If <var>target</var>'s <span>relevant global object</span> has <span>transient
+   activation</span>, then return true.</p></li>
+
+   <li><p>If <var>target</var> is not <span>fully active</span>, then return false.</p></li>
+
+   <li><p>If running the <span>has focus steps</span> given <var>target</var> returns true, then
+   return true.</p></li>
+
+   <li><p>If <var>focusSetterDocument</var> is not <span>fully active</span>, then return
+   false.</p></li>
+
+   <li><p>If <var>focusSetterDocument</var>'s <span>inclusive descendant navigables</span> does not
+   <span data-x="list contains">contain</span> <var>target</var>'s <span>node navigable</span>, then
+   return false.</p></li>
+
    <li><p>If <var>focusSetterDocument</var> is <span>allowed to use</span> the "<code
    data-x="focus-without-user-activation-feature">focus-without-user-activation</code>" feature,
    then return true.</p></li>
@@ -87509,21 +87529,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>focusSetterDocument</var>'s <span>relevant global object</span> has
    <span>transient activation</span>, then return true.</p></li>
 
-   <li><p>If <var>focusSetterDocument</var> is not <span>fully active</span>, then return
-   false.</p></li>
-
-   <li>
-    <p>For each <var>navigable</var> in the <span>inclusive descendant navigables</span> of
-    <var>focusSetterDocument</var>:</p>
-
-    <ol>
-     <li><p>Let <var>descendantDocument</var> be <var>navigable</var>'s <span
-     data-x="nav-document">active document</span>.</p></li>
-
-     <li><p>If running the <span>has focus steps</span> given <var>descendantDocument</var> returns
-     true, then return true.</p></li>
-    </ol>
-   </li>
+   <li><p>If running the <span>has focus steps</span> given <var>focusSetterDocument</var> returns
+   true, then return true.</p></li>
 
    <li><p>Return false.</p></li>
   </ol>
@@ -87609,8 +87616,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>If <var>target</var>'s <span>active sandboxing flag set</span> has the
    <span>sandboxed automatic features browsing context flag</span>, then return.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>target</var> return false, then
-   return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <var>target</var> and <var>target</var> return
+   false, then return.</p></li>
 
    <li><p>Let <var>topDocument</var> be <var>target</var>'s <span>node navigable</span>'s <span
    data-x="nav-top">top-level traversable</span>'s <span data-x="nav-document">active
@@ -93062,8 +93069,8 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
   <var>focusSetterDocument</var>:</p>
 
   <ol>
-   <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
-   then return.</p></li>
+   <li><p>If the <span>allow focus steps</span> given <var>subject</var>'s <span>node
+   document</span> and <var>focusSetterDocument</var> return false, then return.</p></li>
 
    <li><p>If <var>subject</var> is a <code>dialog</code> element, then run the <span>dialog focusing
    steps</span> given <var>subject</var> and <var>focusSetterDocument</var>, and return.</p></li>
