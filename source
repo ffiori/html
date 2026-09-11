@@ -56881,6 +56881,9 @@ interface <dfn interface>HTMLButtonElement</dfn> : <span>HTMLElement</span> {
     <p>If <var>target</var> is not null:</p>
 
     <ol>
+     <li><p>Let <var>focusSetterDocument</var> be <var>element</var>'s <span>node
+     document</span>.</p></li>
+
      <li><p>Let <var>command</var> be <var>element</var>'s <code
      data-x="attr-button-command">command</code> attribute.</p></li>
 
@@ -56935,7 +56938,7 @@ interface <dfn interface>HTMLButtonElement</dfn> : <span>HTMLElement</span> {
 
        <li><p>If <var>validity</var> is true, then run the <span data-x="show popover">show popover
        algorithm</span> given <var>target</var>, false, <var>element</var>, and
-       <var>element</var>'s <span>node document</span>.</p></li>
+       <var>focusSetterDocument</var>.</p></li>
 
        <li>
         <p>Otherwise:</p>
@@ -56963,14 +56966,14 @@ interface <dfn interface>HTMLButtonElement</dfn> : <span>HTMLElement</span> {
 
        <li><p>If <var>validity</var> is true, then run the <span data-x="show popover">show popover
        algorithm</span> given <var>target</var>, false, <var>element</var>, and
-       <var>element</var>'s <span>node document</span>.</p></li>
+       <var>focusSetterDocument</var>.</p></li>
       </ol>
      </li>
 
      <li><p>Otherwise, if this standard defines <span>command steps</span> for
      <var>target</var>'s <span data-x="concept-element-local-name">local name</span>, then run the
      corresponding <span>command steps</span> given <var>target</var>, <var>element</var>,
-     and <var>command</var>.</p></li>
+     <var>command</var>, and <var>focusSetterDocument</var>.</p></li>
     </ol>
    </li>
 
@@ -66776,8 +66779,9 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
 
   <div algorithm>
   <p>The <span>command steps</span> for <code>dialog</code> elements, given an element
-  <var>element</var>, an element <var>source</var>, and a <code
-  data-x="attr-button-command">command</code> attribute <var>command</var>, are:</p>
+  <var>element</var>, an element <var>source</var>, a <code
+  data-x="attr-button-command">command</code> attribute <var>command</var>, and a
+  <code>Document</code> <var>focusSetterDocument</var>, are:</p>
 
   <ol>
    <li><p>If <var>element</var> is in the <span
@@ -66800,7 +66804,7 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
    data-x="attr-button-command-show-modal-state">Show Modal</span> state and <var>element</var> does
    not have an <code data-x="attr-dialog-open">open</code> attribute, then
    <span>show a modal dialog</span> given <var>element</var>, <var>source</var>, and
-   <var>source</var>'s <span>node document</span>.</p></li>
+   <var>focusSetterDocument</var>.</p></li>
   </ol>
   </div>
 
@@ -87523,8 +87527,10 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
   </ol>
 
   <p class="note">These steps do not restrict the destination of an authorized focus change. The
-  <span>has focus steps</span> include focus in descendant navigables and require <span>system
-  focus</span>. Once focus leaves the setter's subtree, this focus-based allowance no longer
+  <span>has focus steps</span> include focus in <var>focusSetterDocument</var>'s <span>descendant
+  navigables</span> and require its <span>node navigable</span>'s <span data-x="nav-top">top-level
+  traversable</span> to have <span>system focus</span>. Once focus leaves
+  <var>focusSetterDocument</var> and those navigables, this focus-based allowance no longer
   applies.</p>
   </div>
 
@@ -87682,6 +87688,9 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
      <li><p><span data-x="list remove">Remove</span> <var>element</var> from
      <var>candidates</var>.</p></li>
+
+     <li><p>If the <span>allow focus steps</span> given <var>doc</var> return false, then
+     <span>continue</span>.</p></li>
 
      <li><p>Let <var>inclusiveAncestorDocuments</var> be a <span>list</span> consisting of the
      <span data-x="nav-document">active document</span> of <var>doc</var>'s <span>inclusive
