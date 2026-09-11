@@ -87525,13 +87525,6 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    <li><p>Return the result of running the <span>has focus steps</span> given
    <var>focusSetterDocument</var>.</p></li>
   </ol>
-
-  <p class="note">These steps do not restrict the destination of an authorized focus change. The
-  <span>has focus steps</span> include focus in <var>focusSetterDocument</var>'s <span>descendant
-  navigables</span> and require its <span>node navigable</span>'s <span data-x="nav-top">top-level
-  traversable</span> to have <span>system focus</span>. Once focus leaves
-  <var>focusSetterDocument</var> and those navigables, this focus-based allowance no longer
-  applies.</p>
   </div>
 
   </div>
@@ -93070,9 +93063,6 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
   <var>focusSetterDocument</var>:</p>
 
   <ol>
-   <li><p>If <var>subject</var>'s <span>node document</span> is not <span>fully active</span>, then
-   return.</p></li>
-
    <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
    then return.</p></li>
 
