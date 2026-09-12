@@ -87409,7 +87409,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
    data-x="concept-incumbent-global">incumbent global object</span>'s <span
    data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
 
-   <li><p>If the <span>allow focus steps</span> given <var>focusSetterDocument</var> return false,
+   <li><p>If the <span>allow focus steps</span> given <var>current</var>'s <span
+   data-x="nav-document">active document</span> and <var>focusSetterDocument</var> return false,
    then return.</p></li>
 
    <li><p>Run the <span>focusing steps</span> with <var>current</var>.</p></li>
@@ -87476,7 +87477,8 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
   <div algorithm>
   <p>The <dfn export>allow focus steps</dfn>, given a <code>Document</code> object
-  <var>focusSetterDocument</var>, are:</p>
+  <var>target</var> and an optional <code>Document</code> object <var>focusSetterDocument</var>
+  (default <var>target</var>), are:</p>
 
   <ol>
    <li><p>If <var>focusSetterDocument</var> is not <span>fully active</span>, then return
@@ -87488,6 +87490,11 @@ dictionary <dfn dictionary>CommandEventInit</dfn> : <span>EventInit</span> {
 
    <li><p>If <var>focusSetterDocument</var>'s <span>relevant global object</span> has
    <span>transient activation</span>, then return true.</p></li>
+
+   <li><p>If neither <var>focusSetterDocument</var>'s <span>inclusive ancestor navigables</span> nor
+   <var>focusSetterDocument</var>'s <span>inclusive descendant navigables</span> <span
+   data-x="list contains">contains</span> <var>target</var>'s <span>node navigable</span>, then
+   return false.</p></li>
 
    <li><p>Return the result of running the <span>has focus steps</span> given
    <var>focusSetterDocument</var>.</p></li>
