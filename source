@@ -66413,15 +66413,15 @@ interface <dfn interface>HTMLDialogElement</dfn> : <span>HTMLElement</span> {
   method steps are:</p>
 
   <ol>
-   <li><p>Let <var>focusSetterDocument</var> be the <span
-   data-x="concept-incumbent-global">incumbent global object</span>'s <span
-   data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
-
    <li><p>If <span>this</span> has an <code data-x="attr-dialog-open">open</code> attribute and
    <span>is modal</span> of <span>this</span> is false, then return.</p></li>
 
    <li><p>If <span>this</span> has an <code data-x="attr-dialog-open">open</code> attribute, then
    throw an <span>"<code>InvalidStateError</code>"</span> <code>DOMException</code>.</p></li>
+
+   <li><p>Let <var>focusSetterDocument</var> be the <span
+   data-x="concept-incumbent-global">incumbent global object</span>'s <span
+   data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
 
    <li><p>If the result of <span data-x="concept-event-fire">firing an event</span> named <code
    data-x="event-beforetoggle">beforetoggle</code>, using <code>ToggleEvent</code>, with the <code
@@ -92791,10 +92791,6 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
   data-x="dom-togglePopover">togglePopover(<var>options</var>)</code></dfn> method steps are:</p>
 
   <ol>
-   <li><p>Let <var>focusSetterDocument</var> be the <span
-   data-x="concept-incumbent-global">incumbent global object</span>'s <span
-   data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
-
    <li><p>Let <var>force</var> be null.</p></li>
 
    <li><p>If <var>options</var> is a boolean, set <var>force</var> to <var>options</var>.</p></li>
@@ -92813,8 +92809,18 @@ dictionary <dfn dictionary>DragEventInit</dfn> : <span>MouseEventInit</span> {
    the <span>hide popover algorithm</span> given <span>this</span>, true, true, true, and
    null.</p></li>
 
-   <li><p>Otherwise, if <var>force</var> is null or true, then run <span>show popover</span> given
-   <span>this</span>, true, <var>source</var>, and <var>focusSetterDocument</var>.</p></li>
+   <li>
+    <p>Otherwise, if <var>force</var> is null or true:</p>
+
+    <ol>
+     <li><p>Let <var>focusSetterDocument</var> be the <span
+     data-x="concept-incumbent-global">incumbent global object</span>'s <span
+     data-x="concept-document-window">associated <code>Document</code></span>.</p></li>
+
+     <li><p>Run <span>show popover</span> given <span>this</span>, true, <var>source</var>, and
+     <var>focusSetterDocument</var>.</p></li>
+    </ol>
+   </li>
 
    <li>
     <p>Otherwise:</p>
